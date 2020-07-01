@@ -2,7 +2,7 @@ import React from "react";
 
 function Help() {
   return (
-    <h1>Have you gone through all the steps on Learn How to Program debugging lesson?</h1>
+    <h1>Have you asked for help from friend?</h1>
   )
 }
 

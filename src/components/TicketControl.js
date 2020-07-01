@@ -62,14 +62,6 @@ class TicketControl extends React.Component {
       buttonText = "Return to List";
     }
 
-
-    // else if (this.state.formVisibleOnPage) {
-    //   currentlyVisibleState = <NewTicketForm />
-    //   buttonText = "Return to Ticket List!";
-    // } else {
-    //   currentlyVisibleState = <TicketList />
-    //   buttonText = "Add ticket!";
-    // }
     return (
       <React.Fragment>
         {currentlyVisibleState}
