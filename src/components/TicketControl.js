@@ -6,60 +6,56 @@ import Steps from "./Steps";
 import Fifteen from "./Fifteen";
 import TicketDetail from "./TicketDetail";
 import EditTicketForm from './EditTicketForm';
+import { connect } from 'react-redux';
+import PropTypes from "prop-types";
+import * as milko from './../actions';
 
 
 class TicketControl extends React.Component {
 
   constructor(props) {
     super(props);
+    console.log(props);
     this.state = {
-      formVisibleOnPage: false,
-      masterTicketList: [],
-      counter: 0,
+      // formVisibleOnPage: false,
+      // masterTicketList: [], // moved for redux (still handles local state)
       selectedTicket: null,
       editing: false
     };
   }
 
   handleChangingSelectedTicket = (id) => {
-    const selectedTicket = this.state.masterTicketList.filter(ticket => ticket.id === id)[0];
+    const selectedTicket = this.props.masterTicketList[id];
     this.setState({ selectedTicket: selectedTicket });
   }
 
   handleAddingNewTicketToList = (newTicket) => {
-
-    const newMasterTicketList = this.state.masterTicketList.concat(newTicket);
-    this.setState({
-      masterTicketList: newMasterTicketList,
-      counter: 0
-    });
+    const { dispatch } = this.props; // deconstruct dispatch from this.props
+    const { id, names, location, issue } = newTicket; // deconstruct values from newTicket to pass into action
+    const action = milko.addTicket(newTicket);
+    dispatch(action); // dispatched action and updates store
+    const action2 = milko.toggleForm();
+    dispatch(action2); // dispatch is asyncronous
   }
 
   handleClick = () => {
     if (this.state.selectedTicket != null) {
       this.setState({
-        formVisibleOnPage: false,
         selectedTicket: null,
         editing: false
       });
-    } else if (this.state.counter <= 3) {
-      this.setState(prevState => ({
-        counter: prevState.counter + 1
-      }));
-    } else {
-      this.setState(prevState => ({
-        formVisibleOnPage: !prevState.formVisibleOnPage,
-        counter: 0
-      }));
+    } else{
+      const { dispatch } = this.props;
+      const action = milko.toggleForm();
+      dispatch(action);
     }
   }
 
   handleEditingTicketInList = (ticketToEdit) => {
-    const editedMasterTicketList = this.state.masterTicketList
-      .filter(ticket => ticket.id !== this.state.selectedTicket.id)
-      .concat(ticketToEdit);
+    const { dispatch } = this.props;
+    const action = milko.addTicket(ticketToEdit);
+    dispatch(action);
     this.setState({
-      masterTicketList: editedMasterTicketList,
       editing: false,
       selectedTicket: null
     });
@@ -71,9 +67,10 @@ class TicketControl extends React.Component {
   }
 
   handleDeletingTicket = (id) => {
-    const newMasterTicketList = this.state.masterTicketList.filter(ticket => ticket.id !== id);
+    const { dispatch } = this.props;
+    const action = milko.deleteTicket(id);
+    dispatch(action);
     this.setState({
-      masterTicketList: newMasterTicketList,
       selectedTicket: null
     });
   }
@@ -94,10 +91,10 @@ class TicketControl extends React.Component {
           onClickingEdit={this.handleEditClick}
         />
       buttonText = "Return to Ticket List";
-    } else if (this.state.counter === 0) {
+    } else if (this.props.formVisibleOnPage) {
       currentlyVisibleState =
         <TicketList
-          ticketList={this.state.masterTicketList}
+          ticketList={this.props.masterTicketList}
           onTicketSelection={this.handleChangingSelectedTicket}
         />
       buttonText = "Add ticket!";
@@ -126,5 +123,18 @@ class TicketControl extends React.Component {
     );
   }
 }
+
+TicketControl.propTypes = {
+  masterTicketList: PropTypes.object // The masterTicketList in our Redux store is an object so we define it as that prop type.
+};
+
+const mapStateToProps = state => {
+  return {
+    masterTicketList: state.masterTickerList,
+    formVisibleOnPage: state.formVisibleOnPage // Key-value pairs of state to be mapped from Redux to React component go here.
+  }
+}
+// we want masterTicketList from the store to be mapped to TicketControl's props.
+TicketControl = connect(mapStateToProps)(TicketControl); // This ensures the TicketControl component has the mapStateToProps functionality when connect() redefines the component.
 
 export default TicketControl;
